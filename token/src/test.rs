@@ -269,3 +269,32 @@ fn test_zero_allowance() {
     token.transfer_from(&spender, &from, &spender, &0);
     assert!(token.get_allowance(&from, &spender).is_none());
 }
+
+fn check_balance_retrieve_budget(iterations_count: u32) {
+    let e = Env::default();
+    e.mock_all_auths();
+    e.budget().reset_unlimited();
+
+    let admin = Address::generate(&e);
+    let test_user = Address::generate(&e);
+    let token = create_token(&e, &admin);
+    token.mint(&test_user, &1000);
+
+    for _i in 0..iterations_count {
+        token.mint(&Address::generate(&e), &1000);
+    }
+
+    e.budget().reset_default();
+    token.balance(&test_user);
+    e.budget().print();
+}
+
+#[test]
+fn test_balance_retrieve_budget_100() {
+    check_balance_retrieve_budget(100);
+}
+
+#[test]
+fn test_balance_retrieve_budget_10000() {
+    check_balance_retrieve_budget(10000);
+}
